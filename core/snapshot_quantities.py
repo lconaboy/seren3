@@ -26,12 +26,25 @@ class Quantity(object):
         NML = self.base.nml.NML
         nml = self.base.nml
 
-        if ("t_star" in nml[NML.PHYSICS_PARAMS]):
-            return nml[NML.PHYSICS_PARAMS]["t_star"]
+        # Check whether the namelist is using (legacy) PHYSICS_PARAMS
+        # or (new) SF_PARAMS
 
-        n_star = nml[NML.PHYSICS_PARAMS]["n_star"]  # cm^-3
-        eps_star = nml[NML.PHYSICS_PARAMS]["eps_star"]
+        if NML.PHYSICS_PARAMS in nml:
+            print("Using legacy namelist block (PHYSICS_PARAMS)")
+            if ("t_star" in nml[NML.PHYSICS_PARAMS]):
+                return nml[NML.PHYSICS_PARAMS]["t_star"]
+            n_star = nml[NML.PHYSICS_PARAMS]["n_star"]  # cm^-3
+            eps_star = nml[NML.PHYSICS_PARAMS]["eps_star"]
 
+        elif NML.SF_PARAMS in nml:
+            if ("t_star" in nml[NML.SF_PARAMS]):
+                return nml[NML.SF_PARAMS]["t_star"]
+            n_star = nml[NML.SF_PARAMS]["n_star"]  # cm^-3
+            eps_star = nml[NML.SF_PARAMS]["eps_star"]
+
+        else:
+            print("Neither PHYSICS_PARAMS or SF_PARAMS found")
+            
         t_star=0.1635449*(n_star/0.1)**(-0.5)/eps_star  # Gyr
         return self.base.array(t_star, "Gyr")
 
