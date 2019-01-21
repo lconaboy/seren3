@@ -44,7 +44,7 @@ class Snapshot(object):
             self.particle_field_list.append("metal")
         # Patch?
         self.patch = self.detect_rt_module()
-q
+
         # Init friedmann dict variable
         self._friedmann = None
 
