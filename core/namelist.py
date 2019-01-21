@@ -71,7 +71,11 @@ class NML(object):
     REFINE_PARAMS = 'REFINE_PARAMS'
     RT_PARAMS = 'RT_PARAMS'
     RT_GROUPS = 'RT_GROUPS'
-
+    # Added new namelist parameters (superseding PHYSICS_PARAMS)
+    COOLING_PARAMS = 'COOLING_PARAMS'
+    SF_PARAMS = 'SF_PARAMS'
+    FEEDBACK_PARAMS = 'FEEDBACK_PARAMS'
+    UNITS_PARAMS = 'UNITS_PARAMS'
 
 class Namelist():
     '''

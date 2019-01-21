@@ -28,8 +28,17 @@ class Snapshot(object):
         self.nml = load_nml(self)
         # Tracking metals?
         self.metals = False
-        if 'metal' in self.nml[NML.PHYSICS_PARAMS]:
-            self.metals = self.nml[NML.PHYSICS_PARAMS]['metal'] == '.true.' or kwargs.pop("metal", False)
+        # First check if the namelist is using PHYSICS_PARAMS (legacy)
+        # or if it is using COOLING_PARAMS (new)
+        if NML.PHYSICS_PARAMS in self.nml:
+            if 'metal' in self.nml[NML.PHYSICS_PARAMS]:
+                self.metals = self.nml[NML.PHYSICS_PARAMS]['metal'] == '.true.' or kwargs.pop("metal", False)
+        elif NML.COOLING_PARAMS in self.nml:
+            if 'metal' in self.nml[NML.COOLING_PARAMS]:
+                self.metals = self.nml[NML.COOLING_PARAMS]['metal'] == '.true.' or kwargs.pop("metal", False)
+        else:
+            print("Neither PHYSICS_PARAMS or COOLING_PARAMS found.")
+ 
         if self.metals:
             self.particle_field_list.append("metal")
         # Patch?
