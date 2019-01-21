@@ -89,8 +89,18 @@ def gas_SFR_density(context, impose_criterion=True, return_averages=False):
     nH = dset["nH"].in_units("cm**-3")
 
     # Load star formation model params from the namelist
-    n_star = context.array(nml[NML.PHYSICS_PARAMS]["n_star"], "cm**-3")  # cm^-3
-    t_star = context.quantities.t_star.in_units("yr")
+
+    # First, check whether using legacy (PHYSICS_PARAMS) or new
+    # (SF_PARAMS) namelist blocks
+    
+    if NML.PHYSICS_PARAMS in nml:
+        print("Using legacy namelist block (PHYSICS_PARAMS)")
+        n_star = context.array(nml[NML.PHYSICS_PARAMS]["n_star"], "cm**-3")  # cm^-3
+        t_star = context.quantities.t_star.in_units("yr")
+
+    elif NML.SF_PARAMS in nml:
+        n_star = context.array(nml[NML.SF_PARAMS]["n_star"], "cm**-3")  # cm^-3
+        t_star = context.quantities.t_star.in_units("yr")
 
     # Compute the SFR density in each cell
     sfr = nH / (t_star*np.sqrt(n_star/nH))  # atoms/yr/cm**3
@@ -103,8 +113,17 @@ def gas_SFR_density(context, impose_criterion=True, return_averages=False):
         sfr[idx] = 0.
 
         # Compute and subtract away the non-thermal polytropic temperature floor
-        g_star = nml[NML.PHYSICS_PARAMS].get("g_star", 1.)
-        T2_star = context.array(nml[NML.PHYSICS_PARAMS]["T2_star"], "K")
+
+        # First, check whether using a namelist with legacy
+        # (PHYSICS_PARAMS) or new (SF_PARAMS) namelist blocks
+        if NML.PHYSICS_PARAMS in nml:
+            print("Using legacy namelist block (PHYSICS_PARAMS)")
+            g_star = nml[NML.PHYSICS_PARAMS].get("g_star", 1.)
+            T2_star = context.array(nml[NML.PHYSICS_PARAMS]["T2_star"], "K")
+        elif NML.SF_PARAMS in nml:
+            g_star = nml[NML.SF_PARAMS].get("g_star", 1.)
+            T2_star = context.array(nml[NML.SF_PARAMS]["T2_star"], "K")
+            
         Tpoly = T2_star * (nH/n_star)**(g_star-1.)  # Polytropic temp. floor
         Tmu = dset["T2"] - Tpoly  # Remove non-thermal polytropic temperature floor
         idx = np.where(Tmu > 2e4)
