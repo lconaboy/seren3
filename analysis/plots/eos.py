@@ -176,10 +176,21 @@ class PhasePlot(object):
         nH = 10**bins
 
         nml = self.snapshot.nml
-        PHYSICS_PARAMS = nml[NML.PHYSICS_PARAMS]
-        n_star = SimArray(PHYSICS_PARAMS['n_star'], "cm**-3").in_units("m**-3")
-        T2_star = PHYSICS_PARAMS['T2_star']
-        g_star = PHYSICS_PARAMS.get('g_star', 2.0)
+        # Check whether the namelist is using lecacy blocks
+        # (PHYSICS_PARAMS) or new blocks (SF_PARAMS)
+        
+        if NML.PHYSICS_PARAMS in nml:
+            print("Using legacy namelist block (PHYSICS_PARAMS)")
+            PHYSICS_PARAMS = nml[NML.PHYSICS_PARAMS]
+            n_star = SimArray(PHYSICS_PARAMS['n_star'], "cm**-3").in_units("m**-3")
+            T2_star = PHYSICS_PARAMS['T2_star']
+            g_star = PHYSICS_PARAMS.get('g_star', 2.0)
+            
+        elif NML.SF_PARAMS in nml:
+            SF_PARAMS = nml[NML.SF_PARAMS]
+            n_star = SimArray(SF_PARAMS['n_star'], "cm**-3").in_units("m**-3")
+            T2_star = SF_PARAMS['T2_star']
+            g_star = SF_PARAMS.get('g_star', 2.0)
 
         return T2_star * (nH / n_star) ** (g_star-1.0)
 
@@ -267,7 +278,16 @@ def _annotate_nstar(ax, pp, **kwargs):
     from seren3.core.snapshot import NML
 
     nml = pp.snapshot.nml
-    n_star = SimArray(nml[NML.PHYSICS_PARAMS]['n_star'], "cm**-3").in_units("m**-3")
+    
+    # Check whether the namelist is using lecacy blocks
+    # (PHYSICS_PARAMS) or new blocks (SF_PARAMS)
+    
+    if NML.PHYSICS_PARAMS in nml:
+        print("Using legacy namelist block (PHYSICS_PARAMS)")
+        n_star = SimArray(nml[NML.PHYSICS_PARAMS]['n_star'], "cm**-3").in_units("m**-3")
+
+    elif NML.SF_PARAMS in nml:
+        n_star = SimArray(nml[NML.SF_PARAMS]['n_star'], "cm**-3").in_units("m**-3")
 
     ymin, ymax = ax.get_ylim()
 
@@ -280,7 +300,16 @@ def _annotate_T2star(ax, pp, **kwargs):
     from seren3.core.snapshot import NML
 
     nml = pp.snapshot.nml
-    T2_star = float(nml[NML.PHYSICS_PARAMS]['T2_star'])
+    
+    # Check whether the namelist is using lecacy blocks
+    # (PHYSICS_PARAMS) or new blocks (SF_PARAMS)
+
+    if NML.PHYSICS_PARAMS in nml:
+        print("Using legacy namelist block (PHYSICS_PARAMS)")
+        T2_star = float(nml[NML.PHYSICS_PARAMS]['T2_star'])
+    elif NML.SF_PARAMS in nml:
+        T2_star = float(nml[NML.SF_PARAMS]['T2_star'])
+
     xmin, xmax = ax.get_xlim()
 
     ax.hlines(y=np.log10(T2_star), xmin=xmin, xmax=xmax, linestyle='--', color='k')
@@ -323,10 +352,21 @@ def _annotate_T2_thresh(ax, pp, internal_thresh=2.e4, **kwargs):
         nH = 10**bins
 
         nml = pp.snapshot.nml
-        PHYSICS_PARAMS = nml[NML.PHYSICS_PARAMS]
-        n_star = SimArray(PHYSICS_PARAMS['n_star'], "cm**-3").in_units("m**-3")
-        T2_star = PHYSICS_PARAMS['T2_star']
-        g_star = PHYSICS_PARAMS.get('g_star', 2.0)
+        # Check whether using lecacy (PHYSICS_PARAMS) or new
+        # (SF_PARAMS) namelist block
+        
+        if NML.PHYSICS_PARAMS in nml:
+            print("Using legacy namelist block (PHYSICS_PARAMS)")
+            PHYSICS_PARAMS = nml[NML.PHYSICS_PARAMS]
+            n_star = SimArray(PHYSICS_PARAMS['n_star'], "cm**-3").in_units("m**-3")
+            T2_star = PHYSICS_PARAMS['T2_star']
+            g_star = PHYSICS_PARAMS.get('g_star', 2.0)
+            
+        elif NML.SF_PARAMS in nml:
+            SF_PARAMS = nml[NML.SF_PARAMS]
+            n_star = SimArray(SF_PARAMS['n_star'], "cm**-3").in_units("m**-3")
+            T2_star = SF_PARAMS['T2_star']
+            g_star = SF_PARAMS.get('g_star', 2.0)
 
         return T2_star * (nH / n_star) ** (g_star-1.0)
 
