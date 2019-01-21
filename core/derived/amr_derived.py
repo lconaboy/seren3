@@ -20,8 +20,17 @@ def amr_dSFR(context, dset, **kwargs):
     nH = dset["nH"].in_units("cm**-3")
 
     # Load star formation model params from the namelist
-    n_star = context.array(nml[NML.PHYSICS_PARAMS]["n_star"], "cm**-3")  # cm^-3
-    t_star = context.quantities.t_star.in_units("yr")
+
+    # First, check whether namelist is using legacy (PHYSICS_PARAMS)
+    # or new (SF_PARAMS) namelist blocks
+
+    if NML.PHYSICS_PARAMS in nml:
+        print("Using legacy namelist block (PHYSICS_PARAMS)")
+        n_star = context.array(nml[NML.PHYSICS_PARAMS]["n_star"], "cm**-3")  # cm^-3
+        t_star = context.quantities.t_star.in_units("yr")
+    elif NML.SF_PARAMS in nml:
+        n_star = context.array(nml[NML.SF_PARAMS]["n_star"], "cm**-3")  # cm^-3
+        t_star = context.quantities.t_star.in_units("yr")
 
     # Compute the SFR density in each cell
     sfr = nH / (t_star*np.sqrt(n_star/nH))  # atoms/yr/cm**3
@@ -35,8 +44,17 @@ def amr_dSFR(context, dset, **kwargs):
         sfr[idx] = 0.
 
         # Compute and subtract away the non-thermal polytropic temperature floor
-        g_star = nml[NML.PHYSICS_PARAMS].get("g_star", 1.)
-        T2_star = context.array(nml[NML.PHYSICS_PARAMS]["T2_star"], "K")
+        
+        # First, check whether namelist is using legacy
+        # (PHYSICS_PARAMS) or new (SF_PARAMS) namelist blocks
+        if NML.PHYSICS_PARAMS in nml:
+            print("Using legacy namelist block (PHYSICS_PARAMS)")
+            g_star = nml[NML.PHYSICS_PARAMS].get("g_star", 1.)
+            T2_star = context.array(nml[NML.PHYSICS_PARAMS]["T2_star"], "K")
+        elif NML.SF_PARAMS in nml:
+            g_star = nml[NML.SF_PARAMS].get("g_star", 1.)
+            T2_star = context.array(nml[NML.SF_PARAMS]["T2_star"], "K")
+
         Tpoly = T2_star * (nH/n_star)**(g_star-1.)  # Polytropic temp. floor
         Tmu = dset["T2"] - Tpoly  # Remove non-thermal polytropic temperature floor
         idx = np.where(Tmu > 2e4)
@@ -217,10 +235,20 @@ def amr_TJ(context, dset):
     nH = dset["nH"]
 
     nml = context.nml
-    PHYSICS_PARAMS = nml[NML.PHYSICS_PARAMS]
-    n_star = SimArray(PHYSICS_PARAMS['n_star'], "cm**-3").in_units(nH.units)
-    T2_star = PHYSICS_PARAMS['T2_star']
-    g_star = PHYSICS_PARAMS.get('g_star', 2.0)
+
+    # First, check whether using legacy (PHYSICS_PARAMS) or new
+    # (SF_PARAMS) namelist block
+    if NML.PHYSICS_PARAMS in nml:
+        print("Using legacy namelist block (PHYSICS_PARAMS)")
+        PHYSICS_PARAMS = nml[NML.PHYSICS_PARAMS]
+        n_star = SimArray(PHYSICS_PARAMS['n_star'], "cm**-3").in_units(nH.units)
+        T2_star = PHYSICS_PARAMS['T2_star']
+        g_star = PHYSICS_PARAMS.get('g_star', 2.0)
+    elif NML.SF_PARAMS in nml:
+        SF_PARAMS = nml[NML.SF_PARAMS]
+        n_star = SimArray(SF_PARAMS['n_star'], "cm**-3").in_units(nH.units)
+        T2_star = SF_PARAMS['T2_star']
+        g_star = SF_PARAMS.get('g_star', 2.0)
 
     return SimArray(T2_star * (nH / n_star) ** (g_star-1.0), "K")
 
