@@ -31,6 +31,7 @@ class Snapshot(object):
         # First check if the namelist is using PHYSICS_PARAMS (legacy)
         # or if it is using COOLING_PARAMS (new)
         if NML.PHYSICS_PARAMS in self.nml:
+            print("Using legacy namelist block (PHYSICS_PARAMS)")
             if 'metal' in self.nml[NML.PHYSICS_PARAMS]:
                 self.metals = self.nml[NML.PHYSICS_PARAMS]['metal'] == '.true.' or kwargs.pop("metal", False)
         elif NML.COOLING_PARAMS in self.nml:
@@ -43,7 +44,7 @@ class Snapshot(object):
             self.particle_field_list.append("metal")
         # Patch?
         self.patch = self.detect_rt_module()
-
+q
         # Init friedmann dict variable
         self._friedmann = None
 
