@@ -47,7 +47,7 @@ def run_cicsass(boxsize, z, rms_vbc_z1000, out_fname, N=256):
 
     # Run with N=256
     # CICsASS_home = "/lustre/scratch/astro/ds381/CICsASS/matt/Dropbox/CICASS/vbc_transfer/"
-    cmd = 'cd %s && %s -B%1.2f -N%d -V%f -Z%f -D3 -SinitSB_transfer_out > %s' % (
+    cmd = 'cd %s && %s -B%1.2f -N%d -V%f -Z%f -D3 -Splanck2018_transfer_out > %s' % (
         CICsASS_home, exe, boxsize, N, rms_vbc_z1000, z, out_fname)
     # print 'Running:\n%s' % cmd
     # Run CICsASS and wait for output
@@ -88,15 +88,25 @@ def compute_velocity_bias(ics, vbc):
         exit_code = run_cicsass(boxsize, z, rms_recom, fname_vbcrecom)
 
     # Load the power spectra and compute the bias
-    ps_vbc0 = np.loadtxt(fname_vbc0, unpack=True)
-    ps_vbcrecom = np.loadtxt(fname_vbcrecom, unpack=True)
+    # LC - might be too quick for CICASS, check for empty files
+    ps_vbc0 = []
+    ps_vbcrecom = []
+    count = 0
+    while (len(ps_vbc0) == 0) or (len(ps_vbcrecom) == 0)):
+        count += 1
+        if count > 10:
+            raise Exception("Reached sleep limit. File still empty.")
+        time.sleep(5)
+        ps_vbc0 = np.loadtxt(fname_vbc0, unpack=True)
+        ps_vbcrecom = np.loadtxt(fname_vbcrecom, unpack=True)
+        
 
     # Should have same lenghts if finished writing
     count = 0
     while len(ps_vbcrecom[1]) != len(ps_vbc0[1]):
         count += 1
         if count > 10:
-            raise Exception("Reached sleep limit. Filesizes still differ")
+            raise Exception("Reached sleep limit. Filesizes still differ.")
         time.sleep(5)
         ps_vbc0 = np.loadtxt(fname_vbc0, unpack=True)
         ps_vbcrecom = np.loadtxt(fname_vbcrecom, unpack=True)
