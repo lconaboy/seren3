@@ -89,8 +89,8 @@ def compute_velocity_bias(ics, vbc):
 
     # Load the power spectra and compute the bias
     # LC - might be too quick for CICASS, check for empty files
-    ps_vbc0 = []
-    ps_vbcrecom = []
+    ps_vbc0 = np.loadtxt(fname_vbc0, unpack=True)
+    ps_vbcrecom = np.loadtxt(fname_vbcrecom, unpack=True)
     count = 0
     while ((len(ps_vbc0) == 0) or (len(ps_vbcrecom) == 0)):
         count += 1
