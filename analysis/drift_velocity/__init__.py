@@ -59,6 +59,7 @@ def run_cicsass(boxsize, z, rms_vbc_z1000, out_fname, N=256):
 
 def compute_velocity_bias(ics, vbc):
     import os, time
+    import warnings
     from seren3.array import SimArray
     # print 'AVERAGE INSTEAD OF RMS'
     # Init fields
@@ -89,6 +90,7 @@ def compute_velocity_bias(ics, vbc):
 
     # Load the power spectra and compute the bias
     # LC - might be too quick for CICASS, check for empty files
+    warnings.simplefilter("ignore", UserWarning)
     ps_vbc0 = np.loadtxt(fname_vbc0, unpack=True)
     ps_vbcrecom = np.loadtxt(fname_vbcrecom, unpack=True)
     count = 0
@@ -101,6 +103,9 @@ def compute_velocity_bias(ics, vbc):
         ps_vbcrecom = np.loadtxt(fname_vbcrecom, unpack=True)
         
 
+    # Revert UserWarnings back to Exceptions
+    warnings.simplefilter("error", UserWarning)
+    
     # Should have same lenghts if finished writing
     count = 0
     while len(ps_vbcrecom[1]) != len(ps_vbc0[1]):
