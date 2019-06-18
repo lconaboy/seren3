@@ -92,7 +92,7 @@ def compute_velocity_bias(ics, vbc):
     ps_vbc0 = []
     ps_vbcrecom = []
     count = 0
-    while (len(ps_vbc0) == 0) or (len(ps_vbcrecom) == 0)):
+    while ((len(ps_vbc0) == 0) or (len(ps_vbcrecom) == 0)):
         count += 1
         if count > 10:
             raise Exception("Reached sleep limit. File still empty.")
