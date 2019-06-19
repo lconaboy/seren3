@@ -4,10 +4,6 @@ power spectrum k dependent bias. Contains routines to run CICsASS
 """
 import numpy as np
 
-# Added by LC to stop empty file loading crashing the script
-import warnings
-warnings.simplefilter("ignore", UserWarning)
-
 def fft_sample_spacing(N, boxsize):
     from seren3.cosmology import _power_spectrum
     return _power_spectrum.fft_sample_spacing(N, boxsize)
@@ -96,7 +92,7 @@ def compute_velocity_bias(ics, vbc):
     ps_vbc0 = np.loadtxt(fname_vbc0, unpack=True)
     ps_vbcrecom = np.loadtxt(fname_vbcrecom, unpack=True)
     count = 0
-    while ((len(ps_vbc0) == 0) or (len(ps_vbcrecom) == 0)):
+    while ((len(ps_vbc0) == 0) | (len(ps_vbcrecom) == 0)):
         count += 1
         if count > 10:
             raise Exception("Reached sleep limit. File still empty.")
@@ -106,13 +102,17 @@ def compute_velocity_bias(ics, vbc):
     
     # Should have same lenghts if finished writing
     count = 0
-    while len(ps_vbcrecom[1]) != len(ps_vbc0[1]):
-        count += 1
-        if count > 10:
-            raise Exception("Reached sleep limit. Filesizes still differ.")
-        time.sleep(5)
-        ps_vbc0 = np.loadtxt(fname_vbc0, unpack=True)
-        ps_vbcrecom = np.loadtxt(fname_vbcrecom, unpack=True)
+    try:
+        while len(ps_vbcrecom[1]) != len(ps_vbc0[1]):
+            count += 1
+            if count > 10:
+                raise Exception("Reached sleep limit. Filesizes still differ.")
+            time.sleep(5)
+            ps_vbc0 = np.loadtxt(fname_vbc0, unpack=True)
+            ps_vbcrecom = np.loadtxt(fname_vbcrecom, unpack=True)
+    except Exception as e:
+        print("Caught exception (fname_vbc0): {0}".format(fname_vbc0))
+        print("Caught exception (fname_vbcrecom): {0}".format(fname_vbcrecom))
 
     cosmo = ics.cosmo
 

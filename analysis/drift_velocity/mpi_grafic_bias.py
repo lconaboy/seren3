@@ -1,6 +1,11 @@
 import numpy as np
+import os
 
-VERBOSE = True
+# VERBOSE = os.environ["VERBOSE"]
+# if len(VERBOSE) == 0:
+#     VERBOSE = False
+
+VERBOSE = False
 
 class Patch(object):
 
@@ -110,9 +115,11 @@ if __name__ == "__main__":
     level = int(sys.argv[2])
     patch_size = float(sys.argv[3])
 
+    # main(path, level, patch_size)
+
     try:
-        main(path, level, patch_size)
+         main(path, level, patch_size)
     except Exception as e:
-        from seren3.analysis.parallel import mpi
-        mpi.msg("Caught exception: %s" % e.message)
-        mpi.terminate(500, e=e)
+         from seren3.analysis.parallel import mpi
+         mpi.msg("Caught exception: %s" % e)  # LC e.message -> e
+         mpi.terminate(500, e=e)
