@@ -176,13 +176,17 @@ def compute_bias(ics, vbc):
 
     # Should have same lenghts if finished writing
     count = 0
-    while len(ps_vbcrecom[1]) != len(ps_vbc0[1]):
-        count += 1
-        if count > 10:
-            raise Exception("Reached sleep limit. Filesizes still differ")
-        time.sleep(5)
-        ps_vbc0 = np.loadtxt(fname_vbc0, unpack=True)
-        ps_vbcrecom = np.loadtxt(fname_vbcrecom, unpack=True)
+    try:
+        while len(ps_vbcrecom[1]) != len(ps_vbc0[1]):
+            count += 1
+            if count > 10:
+                raise Exception("Reached sleep limit. Filesizes still differ")
+            time.sleep(5)
+            ps_vbc0 = np.loadtxt(fname_vbc0, unpack=True)
+            ps_vbcrecom = np.loadtxt(fname_vbcrecom, unpack=True)
+    except Exception as e:
+        print("Caught exception (fname_vbc0): {0}".format(fname_vbc0))
+        print("Caught exception (fname_vbcrecom): {0}".format(fname_vbcrecom))
 
     #CDM bias
     b_cdm = ps_vbcrecom[1] / ps_vbc0[1]
