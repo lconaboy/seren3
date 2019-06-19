@@ -92,7 +92,7 @@ def compute_velocity_bias(ics, vbc):
     ps_vbc0 = np.loadtxt(fname_vbc0, unpack=True)
     ps_vbcrecom = np.loadtxt(fname_vbcrecom, unpack=True)
     count = 0
-    while ((len(ps_vbc0) == 0) | (len(ps_vbcrecom) == 0)):
+    while ((len(ps_vbc0) == 0) or (len(ps_vbcrecom) == 0)):
         count += 1
         if count > 10:
             raise Exception("Reached sleep limit. File still empty.")
@@ -161,9 +161,18 @@ def compute_bias(ics, vbc):
     if not os.path.isfile(fname_vbcrecom):
         exit_code = run_cicsass(boxsize, z, rms_recom, fname_vbcrecom)
 
-    # Load power spectra and compute bias
+    # Load the power spectra and compute the bias
+    # LC - might be too quick for CICASS, check for empty files
     ps_vbc0 = np.loadtxt(fname_vbc0, unpack=True)
     ps_vbcrecom = np.loadtxt(fname_vbcrecom, unpack=True)
+    count = 0
+    while ((len(ps_vbc0) == 0) or (len(ps_vbcrecom) == 0)):
+        count += 1
+        if count > 10:
+            raise Exception("Reached sleep limit. File still empty.")
+        time.sleep(5)
+        ps_vbc0 = np.loadtxt(fname_vbc0, unpack=True)
+        ps_vbcrecom = np.loadtxt(fname_vbcrecom, unpack=True)
 
     # Should have same lenghts if finished writing
     count = 0

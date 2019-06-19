@@ -7,10 +7,6 @@ import os
 
 VERBOSE = False
 
-# Added by LC to stop empty file loading crashing the script
-import warnings
-warnings.simplefilter("ignore", UserWarning)
-print("UserWarning set to ignore")
 
 class Patch(object):
 
@@ -120,8 +116,12 @@ if __name__ == "__main__":
     level = int(sys.argv[2])
     patch_size = float(sys.argv[3])
 
-    # main(path, level, patch_size)
+    # Added by LC to stop empty file loading crashing the script
+    import warnings
+    warnings.simplefilter("ignore", UserWarning)
+    print("UserWarning set to ignore")
 
+    # main(path, level, patch_size)
     try:
          main(path, level, patch_size)
     except Exception as e:
