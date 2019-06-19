@@ -7,6 +7,11 @@ import os
 
 VERBOSE = False
 
+# Added by LC to stop empty file loading crashing the script
+import warnings
+warnings.simplefilter("ignore", UserWarning)
+print("UserWarning set to ignore")
+
 class Patch(object):
 
     def __init__(self, patch, dx, field):
@@ -121,5 +126,6 @@ if __name__ == "__main__":
          main(path, level, patch_size)
     except Exception as e:
          from seren3.analysis.parallel import mpi
-         mpi.msg("Caught exception: %s" % e)  # LC e.message -> e
+         mpi.msg("Caught exception (message): %s" % e.message)
+         mpi.msg("Caught exception (args): %s" % e.args)
          mpi.terminate(500, e=e)
