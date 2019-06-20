@@ -5,7 +5,7 @@ import os
 # if len(VERBOSE) == 0:
 #     VERBOSE = False
 
-VERBOSE = False
+VERBOSE = True
 
 
 class Patch(object):
