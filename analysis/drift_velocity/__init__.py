@@ -96,6 +96,8 @@ def compute_velocity_bias(ics, vbc):
         count += 1
         if count > 10:
             raise Exception("Reached sleep limit. File still empty.")
+            print("Caught exception (fname_vbc0): {0}".format(fname_vbc0))
+            print("Caught exception (fname_vbcrecom): {0}".format(fname_vbcrecom))
         time.sleep(5)
         ps_vbc0 = np.loadtxt(fname_vbc0, unpack=True)
         ps_vbcrecom = np.loadtxt(fname_vbcrecom, unpack=True)
@@ -170,6 +172,8 @@ def compute_bias(ics, vbc):
         count += 1
         if count > 10:
             raise Exception("Reached sleep limit. File still empty.")
+            print("Caught exception (fname_vbc0): {0}".format(fname_vbc0))
+            print("Caught exception (fname_vbcrecom): {0}".format(fname_vbcrecom))
         time.sleep(5)
         ps_vbc0 = np.loadtxt(fname_vbc0, unpack=True)
         ps_vbcrecom = np.loadtxt(fname_vbcrecom, unpack=True)
