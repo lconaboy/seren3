@@ -131,12 +131,37 @@ def compute_velocity_bias(ics, vbc):
 
     #CDM bias
     b_cdm = vdeltac / vdeltac0
-    # Baryon bias
+    # Baryon bias/p/scratch/chpo22/hpo22i/bd/cicass/vbc_transfer/vbc_TFs_out/vbc_22.435140_z200.000005_B3.52.dat
     b_b = vdeltab / vdeltab0
     # Wavenumber
     k_bias = SimArray(ps_vbcrecom[0] / ics.cosmo["h"], "h Mpc**-1")
 
     return k_bias, b_cdm, b_b
+
+
+def compute_cicsass(ics, vbc):
+    """Function used to calculate all the cicass power spectra before
+    doing anything else. Not very efficient, but might be necessary."""
+    import os, time
+    from seren3.array import SimArray
+   
+    # Compute size of grid and boxsize (for this patch)
+    N = vbc.shape[0]
+    boxsize = ics.boxsize.in_units("Mpc a h**-1") * (float(N) / float(ics.header.N))
+
+    # Compute vbc @ z=1000
+    z = ics.z
+    rms = vbc_rms(vbc)
+    rms_recom = rms * (1001./z)
+
+        # Check for PS and run CICsASS if needed
+    fname_vbc0 = vbc_ps_fname(0., z, boxsize)
+    if not os.path.isfile(fname_vbc0):
+        exit_code = run_cicsass(boxsize, z, 0., fname_vbc0)
+
+    fname_vbcrecom = vbc_ps_fname(rms_recom, z, boxsize)
+    if not os.path.isfile(fname_vbcrecom):
+        exit_code = run_cicsass(boxsize, z, rms_recom, fname_vbcrecom)
 
 
 def compute_bias(ics, vbc):
