@@ -131,9 +131,9 @@ if __name__ == "__main__":
     patch_size = float(sys.argv[3])
 
     # Added by LC to stop empty file loading crashing the script
-    import warnings
-    warnings.simplefilter("ignore", UserWarning)
-    print("UserWarning set to ignore")
+    # import warnings
+    # warnings.simplefilter("ignore", UserWarning)
+    # print("UserWarning set to ignore")
 
     # main(path, level, patch_size)
     try:
