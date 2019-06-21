@@ -29,6 +29,46 @@ def vbc_ps_fname(rms, z, boxsize):
     return '%s/vbc_TFs_out/vbc_%f_z%f_B%1.2f.dat' % (cwd, rms, z, boxsize)
 
 
+def run_cicsass_lc(boxsize, z, rms_vbc_z1000, out_fname, N=256):
+    import subprocess, os
+    from seren3.utils import which
+
+    exe = which('transfer.x')
+
+    if exe is None:
+        raise Exception("Unable to locate transfer.x executable")
+
+    # Example execution for RMS vbc=30km/s @ z=1000.:
+    # ./transfer.x -B0.2 -N128 -V30 -Z100 -D3 -SinitSB_transfer_out
+
+    CICsASS_home = os.getenv("CICSASS_HOME")
+    if CICsASS_home is None:
+        raise Exception("Env var CICSASS_HOME not set")
+
+    # Run with N=256
+    # CICsASS_home = "/lustre/scratch/astro/ds381/CICsASS/matt/Dropbox/CICASS/vbc_transfer/"
+    cmd = 'cd %s && %s -B%1.2f -N%d -V%f -Z%f -D3 -Splanck2018_transfer_out > %s' % (
+        CICsASS_home, exe, boxsize, N, rms_vbc_z1000, z, out_fname)
+    # print 'Running:\n%s' % cmd
+
+    # Run CICsASS and wait for output, if it doesn't work properly
+    # then it will raise a CalledProcessError
+    try:
+        output = subprocess.check_output(cmd, shell=True)
+    except CalledProcessError:
+        raise Exception("CICsASS returned non-zero exit code: %d", code)
+    
+    output = output.decode("ascii")
+    output = output.splitlines()
+    
+    vals = np.zeros(shape=(64, 4))
+
+    for i in range(64):
+        vals[i, :] = output[i].split()
+
+    return vals
+
+
 def run_cicsass(boxsize, z, rms_vbc_z1000, out_fname, N=256):
     import subprocess, os
     from seren3.utils import which
@@ -139,6 +179,53 @@ def compute_velocity_bias(ics, vbc):
     return k_bias, b_cdm, b_b
 
 
+def compute_velocity_bias_lc(ics, vbc):
+    import os, time
+    from seren3.array import SimArray
+    # print 'AVERAGE INSTEAD OF RMS'
+    # Init fields
+    if vbc is None:
+        vbc = ics['vbc']
+
+    # Compute size of grid and boxsize
+    N = vbc.shape[0]
+    boxsize = float(ics.boxsize) * \
+        (float(N) / float(ics.header.N))
+
+    # Compute vbc @ z=1000
+    # vbc_norm = ics.vbc_rms_norm(vbc=vbc)
+    # vbc_rms = vbc_norm * (1001.)  # vbc_rms prop (1 + z)
+    # Compute vbc @ z=1000
+    z = ics.z
+    rms = vbc_rms(vbc)
+    rms_recom = rms * (1001./z)
+
+    ps_vbc0 = run_cicsass_lc(boxsize, z, 0., fname_vbc0)
+    ps_vbcrecom = run_cicsass_lc(boxsize, z, rms_recom, fname_vbcrecom)
+
+    cosmo = ics.cosmo
+
+    from seren3 import cosmology
+    vdeltab0 = cosmology.linear_velocity_ps(
+        ps_vbc0[0], np.sqrt(ps_vbc0[2]), **cosmo)
+    vdeltab = cosmology.linear_velocity_ps(
+        ps_vbcrecom[0], np.sqrt(ps_vbcrecom[2]), **cosmo)
+
+    vdeltac0 = cosmology.linear_velocity_ps(
+        ps_vbc0[0], np.sqrt(ps_vbc0[1]), **cosmo)
+    vdeltac = cosmology.linear_velocity_ps(
+        ps_vbcrecom[0], np.sqrt(ps_vbcrecom[1]), **cosmo)
+
+    #CDM bias
+    b_cdm = vdeltac / vdeltac0
+    # Baryon bias/p/scratch/chpo22/hpo22i/bd/cicass/vbc_transfer/vbc_TFs_out/vbc_22.435140_z200.000005_B3.52.dat
+    b_b = vdeltab / vdeltab0
+    # Wavenumber
+    k_bias = SimArray(ps_vbcrecom[0] / ics.cosmo["h"], "h Mpc**-1")
+
+    return k_bias, b_cdm, b_b
+
+
 def compute_cicsass(ics, vbc):
     """Function used to calculate all the cicass power spectra before
     doing anything else. Not very efficient, but might be necessary."""
@@ -225,6 +312,35 @@ def compute_bias(ics, vbc):
     k_bias = SimArray(ps_vbcrecom[0] / ics.cosmo["h"], "h Mpc**-1")
 
     return k_bias, b_cdm, b_b
+
+
+def compute_bias_lc(ics, vbc):
+    """ Calculate the bias to the density power spectrum assuming
+    COHERENT vbc at z=1000. """
+    import os, time
+    from seren3.array import SimArray
+   
+    # Compute size of grid and boxsize (for this patch)
+    N = vbc.shape[0]
+    boxsize = ics.boxsize.in_units("Mpc a h**-1") * (float(N) / float(ics.header.N))
+
+    # Compute vbc @ z=1000
+    z = ics.z
+    rms = vbc_rms(vbc)
+    rms_recom = rms * (1001./z)
+
+    ps_vbc0 = run_cicsass_lc(boxsize, z, 0., fname_vbc0)
+    ps_vbcrecom = run_cicsass_lc(boxsize, z, rms_recom, fname_vbcrecom)
+
+    #CDM bias
+    b_cdm = ps_vbcrecom[1] / ps_vbc0[1]
+    # Baryon bias
+    b_b = ps_vbcrecom[2] / ps_vbc0[2]
+    # Wavenumber
+    k_bias = SimArray(ps_vbcrecom[0] / ics.cosmo["h"], "h Mpc**-1")
+
+    return k_bias, b_cdm, b_b
+
 
 def apply_density_bias(ics, k_bias, b, N, delta_x=None):
     ''' Apply a bias to the realisations power spectrum, and recompute the 3D field.
