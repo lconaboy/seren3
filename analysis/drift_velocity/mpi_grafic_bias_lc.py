@@ -49,20 +49,6 @@ def main(path, level, patch_size):
 
 ############################## WORK LOOP ######################################
 
-    # Since we are relying on CICsASS to complete before we can move
-    # forward, it makes sense to compute all of the CICsASS power
-    # spectra before moving on to something else. This isn't
-    # particularly efficient but will provide a test of whether trying
-    # to load the CICsASS power spectra before they've finished is the
-    # cause of my woes.
-    for patch in mpi.piter(cubes):
-        if (VERBOSE): mpi.msg("Loading patch (CICsASS): {0}".format(patch))
-        origin = np.array(patch - float(dx) / 2. - pad, dtype=np.int64)
-        dx_eps = float(dx) + float(2 * pad)
-        vbc = ics.lazy_load_periodic("vbc", origin, int(dx_eps))
-
-        vbc_utils.compute_cicsass(ics, vbc)
-    
     # Iterate over patch positions in parallel
     dest = {}
     for patch, sto in mpi.piter(cubes, storage=dest, print_stats=True):
@@ -76,7 +62,7 @@ def main(path, level, patch_size):
 
         # Compute the bias
         if (VERBOSE): mpi.msg("Computing bias")
-        k_bias, b_cdm, b_b = vbc_utils.compute_bias(ics, vbc)
+        k_bias, b_cdm, b_b = vbc_utils.compute_bias_lc(ics, vbc)
 
         # Convolve with field
         if (VERBOSE): mpi.msg("Performing convolution")
@@ -126,20 +112,18 @@ def main(path, level, patch_size):
 
 if __name__ == "__main__":
     import sys
+    import traceback
+    
     path = sys.argv[1]
     level = int(sys.argv[2])
     patch_size = float(sys.argv[3])
 
-    # Added by LC to stop empty file loading crashing the script
-    # import warnings
-    # warnings.simplefilter("ignore", UserWarning)
-    # print("UserWarning set to ignore")
-
-    # main(path, level, patch_size)
     try:
          main(path, level, patch_size)
     except Exception as e:
-         from seren3.analysis.parallel import mpi
-         mpi.msg("Caught exception (message): %s" % e.message)
-         mpi.msg("Caught exception (args): %s" % e.args)
-         mpi.terminate(500, e=e)
+        from seren3.analysis.parallel import mpi
+        mpi.msg("Caught exception (message): %s" % e.message)
+        mpi.msg(traceback.format_exc())
+        mpi.terminate(500, e=e)
+
+    print("Done!")

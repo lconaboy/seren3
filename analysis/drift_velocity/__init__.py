@@ -29,7 +29,7 @@ def vbc_ps_fname(rms, z, boxsize):
     return '%s/vbc_TFs_out/vbc_%f_z%f_B%1.2f.dat' % (cwd, rms, z, boxsize)
 
 
-def run_cicsass_lc(boxsize, z, rms_vbc_z1000, out_fname, N=256):
+def run_cicsass_lc(boxsize, z, rms_vbc_z1000, N=256):
     import subprocess, os
     from seren3.utils import which
 
@@ -47,26 +47,35 @@ def run_cicsass_lc(boxsize, z, rms_vbc_z1000, out_fname, N=256):
 
     # Run with N=256
     # CICsASS_home = "/lustre/scratch/astro/ds381/CICsASS/matt/Dropbox/CICASS/vbc_transfer/"
-    cmd = 'cd %s && %s -B%1.2f -N%d -V%f -Z%f -D3 -Splanck2018_transfer_out > %s' % (
-        CICsASS_home, exe, boxsize, N, rms_vbc_z1000, z, out_fname)
+    cmd = 'cd %s && %s -B%1.2f -N%d -V%f -Z%f -D3 -SinitSB_transfer_out' % (
+        CICsASS_home, exe, boxsize, N, rms_vbc_z1000, z)
     # print 'Running:\n%s' % cmd
 
-    # Run CICsASS and wait for output, if it doesn't work properly
-    # then it will raise a CalledProcessError
-    try:
+    # Run CICsASS and wait for output, CICsASS power spectrum should
+    # always have 64 rows, so check this is the case and rerun if not
+    runs = 0
+    count = 0
+    while count != 64:
         output = subprocess.check_output(cmd, shell=True)
-    except CalledProcessError:
-        raise Exception("CICsASS returned non-zero exit code: %d", code)
+        output = output.decode("ascii")
+        output = output.splitlines()
     
-    output = output.decode("ascii")
-    output = output.splitlines()
+        vals = np.zeros(shape=(64, 4))
+
+        count = 0
+        for i in range(64):
+            vals[i, :] = output[i].split()
+            # Check for zero values
+            if vals[i, 0] != 0.0: count += 1
+
+        runs += 1
+        if runs > 10:
+            raise Exception("CICsASS not producing 64 rows of output after multiple tries")
+
+    # Transpose to match original code
+    vals = np.transpose(vals)
     
-    vals = np.zeros(shape=(64, 4))
-
-    for i in range(64):
-        vals[i, :] = output[i].split()
-
-    return vals
+    return vals 
 
 
 def run_cicsass(boxsize, z, rms_vbc_z1000, out_fname, N=256):
@@ -200,8 +209,8 @@ def compute_velocity_bias_lc(ics, vbc):
     rms = vbc_rms(vbc)
     rms_recom = rms * (1001./z)
 
-    ps_vbc0 = run_cicsass_lc(boxsize, z, 0., fname_vbc0)
-    ps_vbcrecom = run_cicsass_lc(boxsize, z, rms_recom, fname_vbcrecom)
+    ps_vbc0 = run_cicsass_lc(boxsize, z, 0.)
+    ps_vbcrecom = run_cicsass_lc(boxsize, z, rms_recom)
 
     cosmo = ics.cosmo
 
@@ -329,8 +338,8 @@ def compute_bias_lc(ics, vbc):
     rms = vbc_rms(vbc)
     rms_recom = rms * (1001./z)
 
-    ps_vbc0 = run_cicsass_lc(boxsize, z, 0., fname_vbc0)
-    ps_vbcrecom = run_cicsass_lc(boxsize, z, rms_recom, fname_vbcrecom)
+    ps_vbc0 = run_cicsass_lc(boxsize, z, 0.)
+    ps_vbcrecom = run_cicsass_lc(boxsize, z, rms_recom)
 
     #CDM bias
     b_cdm = ps_vbcrecom[1] / ps_vbc0[1]
