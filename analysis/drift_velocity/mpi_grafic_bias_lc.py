@@ -1,11 +1,7 @@
 import numpy as np
 import os
 
-# VERBOSE = os.environ["VERBOSE"]
-# if len(VERBOSE) == 0:
-#     VERBOSE = False
-
-VERBOSE = True
+VERBOSE = 1  # 0 for all, >0 for just patch, <0 for none
 
 
 class Patch(object):
@@ -24,7 +20,8 @@ def main(path, level, patch_size):
     from seren3.analysis import drift_velocity as vbc_utils
     from seren3.analysis.parallel import mpi
     from seren3.utils import divisors
-
+    import gc
+    
     mpi.msg("Loading initial conditions")
     ics = grafic_snapshot.load_snapshot(path, level, sample_fft_spacing=False)
 
@@ -56,16 +53,16 @@ def main(path, level, patch_size):
         dx_eps = float(dx) + float(2 * pad)
 
         delta = vbc = None
-        if (VERBOSE): mpi.msg("Loading patch: %s" % patch)
+        if (VERBOSE >= 0): mpi.msg("Loading patch: %s" % patch)
         delta = ics.lazy_load_periodic("deltab", origin, int(dx_eps))
         vbc = ics.lazy_load_periodic("vbc", origin, int(dx_eps))
 
         # Compute the bias
-        if (VERBOSE): mpi.msg("Computing bias")
+        if (VERBOSE == 0): mpi.msg("Computing bias")
         k_bias, b_cdm, b_b = vbc_utils.compute_bias_lc(ics, vbc)
 
         # Convolve with field
-        if (VERBOSE): mpi.msg("Performing convolution")
+        if (VERB0SE == 0): mpi.msg("Performing convolution")
         delta_biased = vbc_utils.apply_density_bias(ics, k_bias, b_b, delta.shape[0], delta_x=delta)
 
         # Remove the padded region
