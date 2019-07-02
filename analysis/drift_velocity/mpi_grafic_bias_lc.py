@@ -62,7 +62,7 @@ def main(path, level, patch_size):
         k_bias, b_cdm, b_b = vbc_utils.compute_bias_lc(ics, vbc)
 
         # Convolve with field
-        if (VERB0SE == 0): mpi.msg("Performing convolution")
+        if (VERBOSE == 0): mpi.msg("Performing convolution")
         delta_biased = vbc_utils.apply_density_bias(ics, k_bias, b_b, delta.shape[0], delta_x=delta)
 
         # Remove the padded region
