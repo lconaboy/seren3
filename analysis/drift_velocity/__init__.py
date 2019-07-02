@@ -51,8 +51,8 @@ def run_cicsass_lc(boxsize, z, rms_vbc_z1000, N=256):
         CICsASS_home, exe, boxsize, N, rms_vbc_z1000, z)
     # print 'Running:\n%s' % cmd
 
-    # Run CICsASS and wait for output, CICsASS power spectrum should
-    # always have 64 rows, so check this is the case and rerun if not
+    # Run CICsASS and wait for output, check_output is blocking and
+    # will return an Exception if cmd fails
     runs = 0
     count = 0
     while count != 64:
@@ -62,15 +62,9 @@ def run_cicsass_lc(boxsize, z, rms_vbc_z1000, N=256):
     
         vals = np.zeros(shape=(64, 4))
 
-        count = 0
+        # This is slow but perhaps unavoidable
         for i in range(64):
             vals[i, :] = output[i].split()
-            # Check for zero values
-            if vals[i, 0] != 0.0: count += 1
-
-        runs += 1
-        if runs > 10:
-            raise Exception("CICsASS not producing 64 rows of output after multiple tries")
 
     # Transpose to match original code
     vals = np.transpose(vals)
