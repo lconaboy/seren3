@@ -1,7 +1,10 @@
 import numpy as np
 import os
 
-VERBOSE = 1  # 0 for all, >0 for just patch, <0 for none
+# VERBOSE = 1  # 0 for all, >0 for just patch, <0 for none
+P = False
+B = False
+C = False
 
 
 class Patch(object):
@@ -53,16 +56,16 @@ def main(path, level, patch_size):
         dx_eps = float(dx) + float(2 * pad)
 
         delta = vbc = None
-        if (VERBOSE >= 0): mpi.msg("Loading patch: %s" % patch)
+        if (P): mpi.msg("Loading patch: %s" % patch)
         delta = ics.lazy_load_periodic("deltab", origin, int(dx_eps))
         vbc = ics.lazy_load_periodic("vbc", origin, int(dx_eps))
 
         # Compute the bias
-        if (VERBOSE == 0): mpi.msg("Computing bias")
+        if (B): mpi.msg("Computing bias")
         k_bias, b_cdm, b_b = vbc_utils.compute_bias_lc(ics, vbc)
 
         # Convolve with field
-        if (VERBOSE == 0): mpi.msg("Performing convolution")
+        if (C): mpi.msg("Performing convolution")
         delta_biased = vbc_utils.apply_density_bias(ics, k_bias, b_b, delta.shape[0], delta_x=delta)
 
         # Remove the padded region
