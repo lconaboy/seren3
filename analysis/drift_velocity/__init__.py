@@ -30,7 +30,7 @@ def vbc_ps_fname(rms, z, boxsize):
 
 
 def run_cicsass_lc(boxsize, z, rms_vbc_z1000, N=256):
-    import subprocess, os
+    import subprocess, os, gc
     from seren3.utils import which
 
     exe = which('transfer.x')
@@ -51,23 +51,24 @@ def run_cicsass_lc(boxsize, z, rms_vbc_z1000, N=256):
         CICsASS_home, exe, boxsize, N, rms_vbc_z1000, z)
     # print 'Running:\n%s' % cmd
 
+    gc.collect() # Collect garbage
+
     # Run CICsASS and wait for output, check_output is blocking and
     # will return an Exception if cmd fails
-    runs = 0
-    count = 0
-    while count != 64:
-        output = subprocess.check_output(cmd, shell=True)
-        output = output.decode("ascii")
-        output = output.splitlines()
+    output = subprocess.check_output(cmd, shell=True)
+    output = output.decode("ascii")
+    output = output.splitlines()
     
-        vals = np.zeros(shape=(64, 4))
+    vals = np.zeros(shape=(64, 4))
 
-        # This is slow but perhaps unavoidable
-        for i in range(64):
-            vals[i, :] = output[i].split()
+    # This is slow but perhaps unavoidable
+    for i in range(64):
+        vals[i, :] = output[i].split()
 
     # Transpose to match original code
     vals = np.transpose(vals)
+
+    gc.collect() # Collect garbage
     
     return vals 
 
