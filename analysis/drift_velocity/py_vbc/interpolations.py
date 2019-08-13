@@ -83,7 +83,9 @@ def interpolate_recfast():
     # Extract the variables
     z = vals[:, 0]
     xe = vals[:, 1]
-    T = vals[:, 2]
+    # RECFAST and RECFAST++ have a differing number of columns, but
+    # temperature is always the last
+    T = vals[:, -1]  
 
     # Compute the splines, again why are we doing this? If the spline
     # is the same length as the input array isn't this pointless?
