@@ -210,7 +210,6 @@ def compute_velocity_bias_lc(ics, vbc):
     # ps_vbcrecom = run_cicsass_lc(boxsize, z, rms_recom)
 
     # Boxsize doesn't make a difference when calculating the power spectra
-    print('vbc = {0} zstart={1} z={2}'.format(rms, zstart, z))
     ps_vbc0 = run_pyvbc(vbc=0.0, zstart=zstart, zend=z, dz=3)
     ps_vbcrecom = run_pyvbc(vbc=rms_recom, zstart=zstart, zend=z, dz=3)
 
