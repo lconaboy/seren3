@@ -3,7 +3,7 @@ Utility functions to include drift velocity in grafIC ics by computing/convolvin
 power spectrum k dependent bias. Contains routines to run CICsASS
 """
 import numpy as np
-from py_vbc.main import run_pyvbc
+from py_vbc import run_pyvbc
 
 def fft_sample_spacing(N, boxsize):
     from seren3.cosmology import _power_spectrum
@@ -202,6 +202,7 @@ def compute_velocity_bias_lc(ics, vbc):
     # vbc_rms = vbc_norm * (1001.)  # vbc_rms prop (1 + z)
     # Compute vbc @ z=1000
     z = ics.z
+    zstart=1000
     rms = vbc_rms(vbc)
     rms_recom = rms * (1001./z)
 
@@ -209,6 +210,7 @@ def compute_velocity_bias_lc(ics, vbc):
     # ps_vbcrecom = run_cicsass_lc(boxsize, z, rms_recom)
 
     # Boxsize doesn't make a difference when calculating the power spectra
+    print('vbc = {0} zstart={1} z={2}'.format(rms, zstart, z))
     ps_vbc0 = run_pyvbc(vbc=0.0, zstart=zstart, zend=z, dz=3)
     ps_vbcrecom = run_pyvbc(vbc=rms_recom, zstart=zstart, zend=z, dz=3)
 
@@ -343,6 +345,7 @@ def compute_bias_lc(ics, vbc):
     # ps_vbcrecom = run_cicsass_lc(boxsize, z, rms_recom)
     
     # Boxsize doesn't make a difference when calculating the power spectra
+    print('vbc = {0} zstart={1} z={2}'.format(rms, zstart, z))
     ps_vbc0 = run_pyvbc(vbc=0.0, zstart=zstart, zend=z, dz=3)
     ps_vbcrecom = run_pyvbc(vbc=rms_recom, zstart=zstart, zend=z, dz=3)
 

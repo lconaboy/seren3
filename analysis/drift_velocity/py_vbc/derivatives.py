@@ -151,6 +151,7 @@ def derivs(z, y, k, T_spline, xe_spline, vbc, zstart):
     o_c = (omega_m-omega_b)/(omega_m + omega_r*z1)
     o_b = omega_b/(omega_m + omega_r*z1)
 
+    print('z = {0}'.format(z))
     # Convert vbc to Mpc/s to it is in the same units as k and
     # insert decaying dependence with redshift
     vbck = (vbc/((1+zstart)/z1))/mpctokm
