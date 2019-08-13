@@ -95,7 +95,7 @@ def piter(iterable, storage=None, keep_None=False, print_stats=False):
 
         ##########################################################
         # LC - profile memory usage
-        print(f"rank {0}, memory usage = {1:.3f} Mo".format(rank, get_memory_usage()))
+        print("rank {0}, memory usage = {1:.3f} Mo".format(rank, get_memory_usage()))
         ##########################################################
 
         if print_stats:
