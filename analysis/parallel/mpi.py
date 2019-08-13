@@ -9,6 +9,17 @@ size = comm.Get_size()
 rank = comm.Get_rank()
 host = (rank == HOST_RANK)
 
+################################################################################
+# LC - profiling memory usage
+import psutil
+def get_memory_usage():
+    """Return the memory usage in Mo."""
+    process = psutil.Process(os.getpid())
+    mem = process.memory_info()[0] / float(2 ** 20)
+    return mem
+################################################################################
+
+
 class Result(object):
     '''
     Simple wrapper object to contain result of single iteration MPI computation
@@ -81,6 +92,12 @@ def piter(iterable, storage=None, keep_None=False, print_stats=False):
     local_results = []
     # yield the iterable
     for i in xrange(len(local_iterable)):
+
+        ##########################################################
+        # LC - profile memory usage
+        print(f"rank {rank}, memory usage = {get_memory_usage():.3f} Mo")
+        ##########################################################
+
         if print_stats:
             msg("%i / %i" % (i, len(local_iterable)))
 
