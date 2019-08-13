@@ -1,5 +1,5 @@
 import numpy as np
-
+import os
 # Setup MPI environment
 from mpi4py import MPI
 # MPI runtime variables
