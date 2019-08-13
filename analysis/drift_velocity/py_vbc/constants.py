@@ -39,9 +39,12 @@ t_gamma = 3*lightspeed*melectron/(8*sigmat*u_cmb)  # t_gamma in s
 # zstart = 1000.0
 # zinit = 50.0
 # dz = 3.0
+
+# Really annoying, need to figure out a way to make this dynamic
+base = '/its/home/lc589/codes/seren3/analysis/drift_velocity/'
 camb_base = 'planck2018_transfer_out'
-tf_base = 'tfs/{0}_z{1:03d}.dat'
-rf_base = 'recfast/planck2018_recfast.dat'
+tf_base = base+'py_vbc/tfs/{0}_z{1:03d}.dat'
+rf_base = base+'py_vbc/recfast/planck2018_recfast.dat'
 justcamb = 0
 
 # # Parameters (cosmological, Planck 2018)
