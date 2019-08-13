@@ -103,7 +103,7 @@ def set_ics_comb(k):
 # Original complex differential equations as in O'Leary and McQuinn
 # (2012)
 def derivs_comb(z, y, k, T_spline, xe_spline):
-    from utils import hubble
+    from .utils import hubble
 
     # Calculate Hubble parameter
     H = (100.0*hconst)*hubble(z)/mpctokm
@@ -213,7 +213,7 @@ def calc_derivs(k, vbc, zstart, zend, dz):
     for i, ik in enumerate(k):
         # Progress, comment for Python 2 compatibility
         # print('k = {0:.3f} [{1:d}/{2:d}]'.format(ik, i+1, nk), end='\r')
-        print('k = {0:.3f} [{1:d}/{2:d}]'.format(ik, i+1, nk))
+        # print(('k = {0:.3f} [{1:d}/{2:d}]'.format(ik, i+1, nk)))
 
         r = solve_ivp(fun=lambda z, y: derivs(z, y, ik, T_spline,
                                          xe_spline, vbc, zstart),
