@@ -45,7 +45,7 @@ import os
 base, _ = os.path.split(__file__)
 camb_base = 'planck2018_transfer_out'
 tf_base = os.path.join(base, 'tfs', '{0}_z{1:03d}.dat')
-rf_base = os.path.join(base, 'recfast', 'planck2018_recfast.dat')
+rf_base = os.path.join(base, 'recfast', 'planck2018_recfast.dat'
 justcamb = 0
 
 # # Parameters (cosmological, Planck 2018)
