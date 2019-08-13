@@ -210,8 +210,9 @@ def calc_derivs(k, vbc, zstart, zend, dz):
     z = np.zeros(shape=(nk, 5))
 
     for i, ik in enumerate(k):
-        # Progress
-        print('k = {0:.3f} [{1:d}/{2:d}]'.format(ik, i+1, nk), end='\r')
+        # Progress, comment for Python 2 compatibility
+        # print('k = {0:.3f} [{1:d}/{2:d}]'.format(ik, i+1, nk), end='\r')
+        print('k = {0:.3f} [{1:d}/{2:d}]'.format(ik, i+1, nk))
 
         r = solve_ivp(fun=lambda z, y: derivs(z, y, ik, T_spline,
                                          xe_spline, vbc, zstart),
