@@ -173,8 +173,8 @@ if __name__ == "__main__":
     level = int(sys.argv[2])
     patch_size = float(sys.argv[3])
 
-    try:
-         main(path, level, patch_size)
+    #try:
+    main(path, level, patch_size)
     # except Exception as e:
     #     from seren3.analysis.parallel import mpi
     #     mpi.msg("Caught exception (message): %s" % e.message)
