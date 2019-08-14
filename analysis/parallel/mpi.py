@@ -89,7 +89,8 @@ def piter(iterable, storage=None, keep_None=False, print_stats=False):
     if print_stats:
         msg("Received %d items" % len(local_iterable))
 
-    local_results = []
+    local_results = np.zeros(len(local_iterable), dtype=object)
+
     # yield the iterable
     for i in xrange(len(local_iterable)):
 
@@ -110,7 +111,9 @@ def piter(iterable, storage=None, keep_None=False, print_stats=False):
             if keep_None is False and res.result is None:
                 # Dont append None result to list
                 continue
-            local_results.append(res)
+
+            # appending is expensive, try preallocating
+            local_results[i] = res
 
         else:
             yield local_iterable[i]
