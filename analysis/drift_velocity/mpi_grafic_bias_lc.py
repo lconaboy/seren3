@@ -101,7 +101,7 @@ def main(path, level, patch_size):
     
     ics = grafic_snapshot.load_snapshot(path, level, sample_fft_spacing=False)
 
-    if mpi.host:
+    if rank == 0:
         # Make sure vbc field exists on disk
         if not ics.field_exists_on_disk("vbc"):
             ics.write_field(ics["vbc"], "vbc")
