@@ -1,5 +1,6 @@
 import numpy as np
 import os
+import sys
 # Setup MPI environment
 from mpi4py import MPI
 # MPI runtime variables
@@ -114,6 +115,7 @@ def piter(iterable, storage=None, keep_None=False, print_stats=False):
 
             # appending is expensive, try preallocating
             local_results[i] = res
+            print(sys.getsizeof(res))
 
         else:
             yield local_iterable[i]
