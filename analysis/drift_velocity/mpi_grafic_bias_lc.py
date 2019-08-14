@@ -1,6 +1,7 @@
 import numpy as np
 import os
 import gc
+import pickle
 
 ################################################################################
 # LC - profiling memory usage
@@ -13,9 +14,9 @@ def get_memory_usage():
 ################################################################################
 
 # VERBOSE = 1  # 0 for all, >0 for just patch, <0 for none
-P = True
-B = True
-C = True
+P = False
+B = False
+C = False
 
 class Result(object):
     '''
@@ -64,6 +65,7 @@ def main(path, level, patch_size):
     size = comm.Get_size()
     rank = comm.Get_rank()
     msg = 'rank {0}: {1}'
+
     #mpi.msg("Loading initial conditions")
     print(msg.format(rank, "Loading initial conditions"))
     
@@ -73,6 +75,9 @@ def main(path, level, patch_size):
         # Make sure vbc field exists on disk
         if not ics.field_exists_on_disk("vbc"):
             ics.write_field(ics["vbc"], "vbc")
+        # Make patches dir
+        if not os.path.isdir("./patches"):
+            os.mkdir("./patches")
 
     div = np.array([float(i) for i in divisors(ics.header.N, mode='yield')])
     idx = np.abs((ics.header.N / div) * ics.dx - patch_size).argmin()
@@ -132,6 +137,9 @@ def main(path, level, patch_size):
 
         # Store
         biased_patches[i] = Patch(patch, dx, delta_biased)
+        
+        with open(r"patches/patch_{0}.p".format(rank), "wb") as f:
+            pickle.dump(biased_patches, f)
 
         del vbc
         del delta
@@ -140,39 +148,45 @@ def main(path, level, patch_size):
         gc.collect()
 
 
-    dest = comm.gather(biased_patches, root=0)
+    del biased_patches
+    gc.collect()
+    
+    print(msg.format(rank, "memory usage = {1:.3f} Mo".format(rank, get_memory_usage())))
+    print(msg.format(rank, 'Done patches'))
 
+    # dest = comm.gather(biased_patches, root=0)
+    
 ############################## END OF WORK LOOP ###############################
-    if rank == 0:
-        import os
-        # Write new ICs
-        dest = np.ravel(dest)
+    # if rank == 0:
+    #     import os
+    #     # Write new ICs
+    #     dest = np.ravel(dest)
 
-        output_field = np.zeros(ics.header.nn)
+    #     output_field = np.zeros(ics.header.nn)
 
-        for item in dest:
-            result = item.result
-            patch = result["patch"]
-            dx = result["dx"]
-            delta_biased = result["field"]
+    #     for item in dest:
+    #         result = item.result
+    #         patch = result["patch"]
+    #         dx = result["dx"]
+    #         delta_biased = result["field"]
 
-            # Bounds of this patch
-            x_min, x_max = (int((patch[0]) - (dx / 2.)), int((patch[0]) + (dx / 2.)))
-            y_min, y_max = (int((patch[1]) - (dx / 2.)), int((patch[1]) + (dx / 2.)))
-            z_min, z_max = (int((patch[2]) - (dx / 2.)), int((patch[2]) + (dx / 2.)))
+    #         # Bounds of this patch
+    #         x_min, x_max = (int((patch[0]) - (dx / 2.)), int((patch[0]) + (dx / 2.)))
+    #         y_min, y_max = (int((patch[1]) - (dx / 2.)), int((patch[1]) + (dx / 2.)))
+    #         z_min, z_max = (int((patch[2]) - (dx / 2.)), int((patch[2]) + (dx / 2.)))
 
-            # Place into output
-            output_field[x_min:x_max, y_min:y_max, z_min:z_max] = delta_biased
+    #         # Place into output
+    #         output_field[x_min:x_max, y_min:y_max, z_min:z_max] = delta_biased
 
-        # Write the initial conditions
-        ics_dir = "{0}/ics_ramses_vbc/".format(ics.level_dir)
-        if not os.path.isdir(ics_dir):
-            os.mkdir(ics_dir)
-        out_dir = "{0}/level_{1:03d}/".format(ics_dir, level)
-        if not os.path.isdir(out_dir):
-            os.mkdir(out_dir)
+    #     # Write the initial conditions
+    #     ics_dir = "{0}/ics_ramses_vbc/".format(ics.level_dir)
+    #     if not os.path.isdir(ics_dir):
+    #         os.mkdir(ics_dir)
+    #     out_dir = "{0}/level_{1:03d}/".format(ics_dir, level)
+    #     if not os.path.isdir(out_dir):
+    #         os.mkdir(out_dir)
 
-        ics.write_field(output_field, "deltab", out_dir=out_dir)
+    #     ics.write_field(output_field, "deltab", out_dir=out_dir)
 
 if __name__ == "__main__":
     import sys
