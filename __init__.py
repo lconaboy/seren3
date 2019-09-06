@@ -17,10 +17,10 @@ import matplotlib.pylab as plt
 _jet_black_cm = matplotlib.colors.LinearSegmentedColormap('jet_black', _jet_black_cdict, 1e5)
 plt.register_cmap(cmap=_jet_black_cm)
 
-matplotlib.rcParams['axes.linewidth'] = 1.5
-matplotlib.rcParams['xtick.labelsize'] = 14
-matplotlib.rcParams['ytick.labelsize'] = 14
-matplotlib.rcParams['axes.labelsize'] = 20
+# matplotlib.rcParams['axes.linewidth'] = 1.5
+# matplotlib.rcParams['xtick.labelsize'] = 14
+# matplotlib.rcParams['ytick.labelsize'] = 14
+# matplotlib.rcParams['axes.labelsize'] = 20
 
 # Custom mpl styling
 import config
