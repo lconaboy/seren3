@@ -110,7 +110,7 @@ class AHFCatalogue(HaloCatalogue):
         from seren3.utils import which
         
         r2g = which("ramses2gadget")
-        ahf = which("AHF-v1.0-084")
+        ahf = which("AHF-v1.0-101")
 
         tasks = []
 
@@ -355,11 +355,15 @@ class RockstarCatalogue(HaloCatalogue):
         # return os.path.isdir("%s/%s/" % (self.base.path, config.get("halo", "rockstar_base"))) and os.path.isfile(self.get_rockstar_info_fname())        
         if os.path.isdir(self.finder_base_dir):
           if os.path.isfile(self.get_rockstar_info_fname()):
+            self.rockstar_info_fname = self.get_rockstar_info_fname()
             return True, "exists"
+          elif os.path.isfile('./info_rockstar.txt'):
+            self.rockstar_info_fname = './info_rockstar.txt'
+            return True, "exists ."
           else:
             return False, "Cannot locate info file"
         else:
-          return False, "rockstar directory doesn't exist"
+          return False, "rockstar directory doesn't exist: " + self.finder_base_dir
 
     def get_rockstar_info_fname(self):
         return "%s/info_rockstar.txt" % self.finder_base_dir
@@ -368,7 +372,8 @@ class RockstarCatalogue(HaloCatalogue):
         '''
         Returns the rockstar catalogue filename
         '''
-        rockstar_info_fname = self.get_rockstar_info_fname()
+        # rockstar_info_fname = self.get_rockstar_info_fname()
+        rockstar_info_fname = self.rockstar_info_fname
         base_aexp = 1./(1. + self.base.z)
 
         if kwargs.get("strict_so", False):

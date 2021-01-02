@@ -241,12 +241,15 @@ class HaloCatalogue(object):
     """
     __metaclass__ = abc.ABCMeta
 
-    def __init__(self, pymses_snapshot, finder, filename=None, **kwargs):
+    def __init__(self, pymses_snapshot, finder, filename=None, pathname=None, **kwargs):
         # import weakref
         # self._base = weakref.ref(pymses_snapshot)
         self._base = weakref.ref(pymses_snapshot)
         self.finder = finder
-        self.finder_base_dir = "%s/%s" % (self.base.path, config.get("halo", "%s_base" % self.finder.lower()))
+        if pathname is None:
+            self.finder_base_dir = "%s/%s" % (self.base.path, config.get("halo", "%s_base" % self.finder.lower()))
+        else:
+            self.finder_base_dir = "%s/%s" % (self.base.path, pathname)
 
         can_load, message = self.can_load(**kwargs)
         if can_load is False:
